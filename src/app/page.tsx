@@ -30,8 +30,11 @@ export default function Home() {
   const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
-      processFile(file);
+    if (file) {
+      // Allow if it's explicitly an image, or if the type is empty (common macOS floating screenshot bug)
+      if (file.type.startsWith("image/") || file.type === "") {
+        processFile(file);
+      }
     }
   }, []);
 

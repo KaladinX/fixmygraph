@@ -1,0 +1,11 @@
+
+> fix-my-graph@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.156:3000
+- Environments: .env.local
+✓ Ready in 309ms
+
+ POST /api/analyze-chart 200 in 2.1s (next.js: 294ms, application-code: 1804ms)

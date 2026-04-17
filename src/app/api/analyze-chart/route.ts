@@ -3,9 +3,16 @@ import { NextResponse } from 'next/server';
 
 export const maxDuration = 60;
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 export async function POST(req: Request) {
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('CRITICAL: GEMINI_API_KEY environment variable is missing.');
+    return NextResponse.json(
+      { error: 'Server configuration error: Gemini API key is missing. Please check Vercel environment variables.' },
+      { status: 500 }
+    );
+  }
+
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   try {
     const { imageBase64, mimeType } = await req.json();
 

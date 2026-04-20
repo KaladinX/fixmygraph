@@ -11,7 +11,7 @@ interface DataPoint {
 }
 
 interface ChartData {
-  chartType: "bar" | "line" | "other";
+  chartType: "bar" | "line" | "scatter" | "other";
   title: string;
   xLabel: string;
   yLabel: string;
@@ -212,7 +212,15 @@ export default function Home() {
                   <h3 className="text-center font-bold text-2xl mb-8 text-gray-800">{chartData.title}</h3>
                   <div className="flex-1 w-full h-full relative">
                     <ResponsiveContainer width="100%" height={450}>
-                      {chartData.chartType === 'line' ? (
+                      {chartData.chartType === 'scatter' ? (
+                        <LineChart data={chartData.dataPoints} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis dataKey="label" label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
+                          <YAxis domain={[0, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
+                          <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                          <Line type="monotone" dataKey="value" stroke="none" dot={{ r: 6, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                        </LineChart>
+                      ) : chartData.chartType === 'line' ? (
                         <LineChart data={chartData.dataPoints} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                           <XAxis dataKey="label" label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
@@ -226,7 +234,7 @@ export default function Home() {
                           <XAxis dataKey="label" label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
                           <YAxis domain={[0, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
                           <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#f3f4f6' }} />
-                          <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={60} />
                         </BarChart>
                       )}
                     </ResponsiveContainer>

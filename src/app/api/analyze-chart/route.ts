@@ -27,7 +27,7 @@ A key focus is on correcting deceptive charts (especially those that do not star
 
 Please return the extracted data strictly as a JSON object with the following schema:
 {
-  "chartType": "bar" | "line" | "other",
+  "chartType": "bar" | "line" | "scatter" | "other",
   "title": "string",
   "xLabel": "string",
   "yLabel": "string",
@@ -36,6 +36,11 @@ Please return the extracted data strictly as a JSON object with the following sc
   ],
   "confidence": "number (0 to 1, representing your confidence in the extraction accuracy)"
 }
+
+Rules for chartType:
+- Use "scatter" if the chart is a scatter plot, dot plot, or just isolated points/dots on an axis without connecting lines.
+- Use "line" if there are lines connecting the data points.
+- Use "bar" for bar charts.
 
 Ensure the output is ONLY valid JSON. No markdown formatting or explanation.
 `;

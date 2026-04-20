@@ -16,6 +16,10 @@ interface ChartData {
   xLabel: string;
   yLabel: string;
   dataPoints: DataPoint[];
+  isXNumeric: boolean;
+  suggestedXMin: number | "auto";
+  suggestedYMin: number | "auto";
+  analysis: string;
   confidence: number;
 }
 
@@ -98,6 +102,15 @@ export default function Home() {
     newPoints[index] = { ...newPoints[index], [key]: key === 'value' ? Number(value) : value };
     setChartData({ ...chartData, dataPoints: newPoints });
   };
+
+  const renderData = chartData ? chartData.dataPoints.map(dp => {
+    let xValue: number | string = dp.label;
+    if (chartData.isXNumeric) {
+      const parsed = Number(dp.label.replace(/[^0-9.-]+/g, ""));
+      if (!isNaN(parsed)) xValue = parsed;
+    }
+    return { ...dp, xValue };
+  }) : [];
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans p-8">
@@ -213,32 +226,42 @@ export default function Home() {
                   <div className="flex-1 w-full h-full relative">
                     <ResponsiveContainer width="100%" height={450}>
                       {chartData.chartType === 'scatter' ? (
-                        <LineChart data={chartData.dataPoints} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                        <LineChart data={renderData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                          <XAxis dataKey="label" label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
-                          <YAxis domain={[0, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
+                          <XAxis dataKey={chartData.isXNumeric ? "xValue" : "label"} type={chartData.isXNumeric ? "number" : "category"} domain={chartData.isXNumeric ? [chartData.suggestedXMin, 'auto'] : undefined} label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
+                          <YAxis domain={[chartData.suggestedYMin, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
                           <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                           <Line type="monotone" dataKey="value" stroke="none" dot={{ r: 6, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
                         </LineChart>
                       ) : chartData.chartType === 'line' ? (
-                        <LineChart data={chartData.dataPoints} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                        <LineChart data={renderData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                          <XAxis dataKey="label" label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
-                          <YAxis domain={[0, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
+                          <XAxis dataKey={chartData.isXNumeric ? "xValue" : "label"} type={chartData.isXNumeric ? "number" : "category"} domain={chartData.isXNumeric ? [chartData.suggestedXMin, 'auto'] : undefined} label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
+                          <YAxis domain={[chartData.suggestedYMin, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
                           <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                           <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={4} dot={{ r: 6, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
                         </LineChart>
                       ) : (
-                        <BarChart data={chartData.dataPoints} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                        <BarChart data={renderData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                          <XAxis dataKey="label" label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
-                          <YAxis domain={[0, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
+                          <XAxis dataKey={chartData.isXNumeric ? "xValue" : "label"} type={chartData.isXNumeric ? "number" : "category"} domain={chartData.isXNumeric ? [chartData.suggestedXMin, 'auto'] : undefined} label={{ value: chartData.xLabel, position: 'insideBottom', offset: -20 }} tick={{ fill: '#6b7280' }} tickMargin={10} />
+                          <YAxis domain={[chartData.suggestedYMin, 'auto']} label={{ value: chartData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }} tick={{ fill: '#6b7280' }} />
                           <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#f3f4f6' }} />
                           <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={60} />
                         </BarChart>
                       )}
                     </ResponsiveContainer>
                   </div>
+                </div>
+              )}
+              
+              {chartData.analysis && (
+                <div className="bg-blue-50 p-6 rounded-3xl shadow-sm border border-blue-200 mt-2">
+                  <h3 className="text-blue-800 font-bold mb-2 flex items-center">
+                    <AlertTriangle className="h-5 w-5 mr-2" />
+                    AI Deception Analysis
+                  </h3>
+                  <p className="text-blue-900 leading-relaxed text-lg">{chartData.analysis}</p>
                 </div>
               )}
               

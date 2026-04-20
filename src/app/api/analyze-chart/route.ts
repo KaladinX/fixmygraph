@@ -21,11 +21,23 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-You are a specialized data visualization expert and data extractor.
-Your task is to analyze the provided image of a chart and extract its underlying data points accurately.
-A key focus is on correcting deceptive charts (especially those that do not start their y-axis at 0).
+You are a deceptive-graph detector and corrector. Analyze the screenshot step-by-step:
 
-Please return the extracted data strictly as a JSON object with the following schema:
+1. Chart type: bar/column/line/scatter/etc.?
+   - Use "scatter" if the chart is a scatter plot, dot plot, or just isolated points/dots on an axis without connecting lines.
+   - Use "line" if there are lines connecting the data points.
+   - Use "bar" for bar charts.
+   - Use "other" for anything else.
+2. Extract exactly: title, y-axis label + units + min/max/tick values, x-axis label + units + min/max/tick values, all data points/labels (estimate positions precisely if needed).
+3. Classify variables: Is Y a ratio-scale absolute quantity with natural zero ($ cost, count, etc.)? Is X time/categorical/numeric?
+4. Detect deception: Is y-axis truncated (min > 0 and range < ~30-50% of possible scale from zero)? Same for x?
+5. Corrected "zeroed" chart plan:
+   - Y: If bar or absolute quantity -> set ymin=0 (or tiny negative buffer for padding). Keep nice round max. If neither, use "auto".
+   - X: If time/years -> xmin = data minimum (or logical round-down). Else consider zero only if natural. If neither, use "auto".
+
+Be truthful in your analysis: e.g. "Original graph exaggerates the difference visually. Actual savings: $0.085 (8.5¢ or ~8.6%)."
+
+Please return your final extracted data and analysis strictly as a JSON object with the following schema:
 {
   "chartType": "bar" | "line" | "scatter" | "other",
   "title": "string",
@@ -34,15 +46,14 @@ Please return the extracted data strictly as a JSON object with the following sc
   "dataPoints": [
     { "label": "string", "value": "number" }
   ],
-  "confidence": "number (0 to 1, representing your confidence in the extraction accuracy)"
+  "isXNumeric": boolean (true if X is a continuous numeric scale like $ cost, distance, etc. False if categorical or time/dates),
+  "suggestedXMin": number | "auto" (0 if X has a natural zero, else "auto"),
+  "suggestedYMin": number | "auto" (0 if Y has a natural zero or is a bar chart, else "auto"),
+  "analysis": "string (Your truthful summary of the deception and the real differences)",
+  "confidence": number (0 to 1, representing your confidence in the extraction accuracy)
 }
 
-Rules for chartType:
-- Use "scatter" if the chart is a scatter plot, dot plot, or just isolated points/dots on an axis without connecting lines.
-- Use "line" if there are lines connecting the data points.
-- Use "bar" for bar charts.
-
-Ensure the output is ONLY valid JSON. No markdown formatting or explanation.
+Ensure the output is ONLY valid JSON. No markdown formatting or explanation outside of the JSON.
 `;
 
     const response = await ai.models.generateContent({
